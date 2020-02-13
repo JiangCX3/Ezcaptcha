@@ -2,11 +2,12 @@ import io
 import random
 import string
 
-import style as style
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
+from PIL.Image import alpha_composite
 
 import ezcaptcha.work
 from ezcaptcha import style
+
 
 import matplotlib.pyplot as plt
 
@@ -55,11 +56,9 @@ class Captcha:
         self.draw = ImageDraw.Draw(self.obj)
 
         # ====================
+        self.add_disturbs()
 
         self.add_code_text()
-        self.apply_text_distortion()
-
-        return
 
     def get_object(self):
         """
@@ -84,10 +83,7 @@ class Captcha:
 
         :return:
         """
-        image = Image.new('RGB', (self.styles["width"], self.styles["height"]), color=self.background)
-        ofile = io.BytesIO()
-
-        image.save(ofile, 'JPEG')
+        image = Image.new('RGBA', (self.styles["width"], self.styles["height"]), color=self.background)
 
         return image
 
@@ -97,17 +93,63 @@ class Captcha:
 
         :return:
         """
+        op_layer = Image.new('RGBA', (self.styles["width"], self.styles["height"]))
+        op_layer_draw = ImageDraw.Draw(op_layer)
+
         for key in range(0, len(self.codes)):
             # The font size factor controls the basic font size,
             # and the font distortion factor controls the font size to change randomly.
             font_size = int(self.font_size + random.randint(-self.distortion, self.distortion) * 2)
-            font = ImageFont.truetype("Nunito-Regular.ttf", size=font_size)
+            font = ImageFont.truetype(random.choice(self.styles['text']['fonts']), size=font_size)
 
-            text_y_pos = random.randint(1, self.styles["height"] - font_size)
-            color = random.choice(self.styles["colors"])
+            text_y_pos = random.randint(-50, self.styles["height"] - font_size)
+            color = random.choice(self.styles["text"]["colors"])
             color = self.hex_to_rgb(color)
 
-            self.draw.text((key * self.word_spacing, text_y_pos), self.codes[key], fill=color, font=font)
+            op_layer_draw.text((key * self.word_spacing, text_y_pos), self.codes[key], fill=color, font=font)
+
+        for st in ezcaptcha.style.registered_styles:
+            op_layer = st(op_layer, options=self.styles["text"])
+
+        self.obj = alpha_composite(self.obj, op_layer)
+        print("add_code_text")
+
+    def add_disturbs(self):
+        """
+        ADD disturbs
+
+        :return:
+        """
+        op_layer = Image.new('RGBA', (self.styles["width"], self.styles["height"]))
+        op_layer_draw = ImageDraw.Draw(op_layer)
+
+        font_size = int(self.styles["height"] / 10)
+        font = ImageFont.truetype("Nunito-Regular.ttf", size=font_size)
+
+        x_quantity = int(self.styles["width"] / font_size)
+        y_quantity = int(self.styles["height"] / font_size)
+
+        for x_key in range(0, x_quantity):
+
+            # text_y_pos = random.randint(1, self.styles["height"] - font_size)
+            color = random.choice(self.styles["disturbs"]["colors"])
+            color = self.hex_to_rgb(color)
+            for y_key in range(0, y_quantity):
+                op_layer_draw.text(
+                    (
+                        x_key * font_size + random.randint(-font_size * 0.2, font_size * 0.2),
+                        y_key * font_size + random.randint(-font_size * 0.2, font_size * 0.2)
+                    ),
+                    random.choice(string.ascii_letters),
+                    fill=(color[0], color[1], color[2], 200),
+                    font=font
+                )
+
+        for st in ezcaptcha.style.registered_styles:
+            op_layer = st(op_layer, options=self.styles["disturbs"])
+
+        self.obj = alpha_composite(self.obj, op_layer)
+        print("add_disturbs")
 
     def apply_text_distortion(self):
         for st in self.styles["distortion"]:
@@ -133,18 +175,33 @@ class Captcha:
 
 
 if __name__ == '__main__':
-    code = [random.choices(string.ascii_letters)[0] for s in range(5)]
+    code = [random.choices(string.ascii_letters + string.digits)[0] for s in range(5)]
     print(code)
 
     style = {
         "height": 200,
         "width": 400,
         "background": "#ffffff",
-        "colors": ezcaptcha.work.random_color_list(),
-        "distortion": [
-            style.Distortion.zebra,
-            style.Distortion.emp,
-        ]
+        "background-img": "",
+
+        "disturbs": {
+            "fonts": ["Nunito-Regular.ttf"],
+            "colors": ezcaptcha.work.random_color_list(),
+            "waves-amplitude": 10,
+            "waves-wavelength": 20,
+            # "emp-level": 18,
+            # "zebra-level": 8,
+            # "zebra-width": 10,
+        },
+        "text": {
+            "fonts": ["Nunito-Regular.ttf"],
+            "colors": ezcaptcha.work.random_color_list(),
+            # "waves-amplitude": 10,
+            # "waves-wavelength": 20,
+            # "emp-level": 18,
+            # "zebra-level": 8,
+            "zebra-width": 10,
+        }
     }
 
     gc = Captcha(styles=style, codes=code, distortion=10, word_spacing=60, font_size=160)

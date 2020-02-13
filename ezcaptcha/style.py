@@ -35,23 +35,29 @@ def cut_x(img_array, width):
 
 
 def roll(_list, shift):
+    result = list(_list)
     list_len = len(_list)
 
-    # 将后移到前
-    result = _list
+    if shift >= 0:
+        # 将后移到前
+        for i in range(1, shift + 1):
+            result.insert(0, _list[-i])
 
-    for i in range(1, shift + 1):
-        result.insert(0, _list[-i])
+        # 切片
+        return result[:list_len]
+    else:
+        # 将前移到后
+        for i in range(0, abs(shift)):
+            result.append(_list[i])
 
-    # 切片
-    return result[:list_len]
+        # 切片
+        for i in range(0, abs(shift)):
+            del result[0]
+
+        return result
 
 
 class Distortion:
-    """
-    扭曲样式
-    """
-
     @staticmethod
     def normal(img):
         """
@@ -79,13 +85,62 @@ class Distortion:
         return nparray_to_img(imar)
 
     @staticmethod
-    def waves(img):
-        iarr = img_to_nparray(img)
+    def waves(img, options):
 
-        return nparray_to_img(np.array(iarr))
+        # ==== Register Options ====
+        options_list = [
+            ("waves-amplitude", int(img.size[0] / 10)),
+            ('waves-wavelength', int(img.size[1] / 10))
+        ]
+
+        key_err_count = 0
+        for o in options_list:
+            try:
+                options[o[0]]
+            except KeyError:
+                options[o[0]] = o[1]
+                key_err_count += 1
+
+        if key_err_count == len(options_list):
+            return img
+
+        # ==== Register Options ====
+
+        width, height = img.size
+
+        old_pixels = list(img.getdata())
+        old_pixels = cut_x(old_pixels, width)
+
+        new_pixels = []
+
+        for px_k in range(0, len(old_pixels)):
+            moved = roll(old_pixels[px_k], int(np.sin(px_k / options['waves-wavelength']) * options['waves-amplitude']))
+            new_pixels.append(moved)
+
+        return nparray_to_img(new_pixels)
 
     @staticmethod
-    def emp(img):
+    def emp(img, options):
+
+        # ==== Register Options ====
+        options_list = [
+            ("emp-level", 0),
+        ]
+
+        key_err_count = 0
+        for o in options_list:
+            try:
+                options[o[0]]
+            except KeyError:
+                options[o[0]] = o[1]
+                key_err_count += 1
+
+        if key_err_count == len(options_list):
+            return img
+
+        # ==== Register Options ====
+
+
         width, height = img.size
 
         old_pixels = list(img.getdata())
@@ -100,7 +155,40 @@ class Distortion:
         return nparray_to_img(new_pixels)
 
     @staticmethod
-    def zebra(img):
+    def zebra(img, options):
+
+        # ==== Register Options ====
+        options_list = [
+            ("zebra-level", int(img.size[1] / 15)),
+            ('zebra-width', int(img.size[1] / 10))
+        ]
+
+        key_err_count = 0
+        for o in options_list:
+            try:
+                options[o[0]]
+            except KeyError:
+                options[o[0]] = o[1]
+                key_err_count += 1
+
+        if key_err_count == len(options_list):
+            return img
+
+        # ==== Register Options ====
+
+
+        # Register Options
+        try:
+            if options["zebra-level"] is None and options['zebra-width'] is None:
+                return img
+            elif options["zebra-level"] is None:
+                options["zebra-level"] = 10
+            elif options['zebra-width'] is None:
+                options['zebra-width'] = 10
+
+        except KeyError:
+            return img
+
         width, height = img.size
 
         old_pixels = list(img.getdata())
@@ -113,12 +201,11 @@ class Distortion:
 
         for px in old_pixels:
             change_count += 1
-            if change_count >=20:
+            if change_count >= 20:
                 if move_distance >= 0:
                     move_distance = random.randint(-5, -3)
                 else:
                     move_distance = random.randint(3, 5)
-
 
                 change_count = 0
 
@@ -126,3 +213,10 @@ class Distortion:
             new_pixels.append(moved)
 
         return nparray_to_img(new_pixels)
+
+
+registered_styles = [
+    Distortion.waves,
+    Distortion.emp,
+    Distortion.zebra
+]
