@@ -142,11 +142,12 @@ if __name__ == '__main__':
         "background": "#ffffff",
         "colors": ezcaptcha.work.random_color_list(),
         "distortion": [
-            style.Distortion.waves
+            style.Distortion.zebra,
+            style.Distortion.emp,
         ]
     }
 
-    gc = Captcha(styles=style, codes=code, distortion=10, word_spacing=70, font_size=160)
+    gc = Captcha(styles=style, codes=code, distortion=10, word_spacing=60, font_size=160)
 
-    # plt.imshow(gc.get_object())
-    # plt.show()
+    plt.imshow(gc.get_object())
+    plt.show()
