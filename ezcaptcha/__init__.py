@@ -1,7 +1,21 @@
 #!/usr/bin/env python
 # encoding=utf-8
+from PIL import Image
 
-def easy_get(length: int = 4, complexity: int = 5, return_type: str = "image", **kwargs):
+from ezcaptcha.generater import Captcha
+from .work import RandomCode
+from . import work
+
+
+def easy_get(
+        width: int = 400,
+        height: int = 200,
+        length: int = 4,
+        complexity: int = 5,
+        return_type: str = "image",
+        filepath: str = None,
+        **kwargs
+):
     """
     最简单，最不用动脑子的解决办法。传入需要的长度以及复杂度，立即生成验证码图片。
 
@@ -9,42 +23,99 @@ def easy_get(length: int = 4, complexity: int = 5, return_type: str = "image", *
     complexity  复杂度，1-10简单到复杂
     return_type 返回数据类型，可以是 imageObject\base64Code\filepath
 
+    :param height:
+    :param width:
+    :param return_type:
+    :param filepath:
     :param length:
     :param complexity:
     :return:
     """
+    result = None
 
-    image = None
-    code = ""
-    return (image, code)
+    try:
+        styles = kwargs["styles"]
+    except KeyError:
+        styles = None
+
+    font_size = int(height / 1.3)
+    word_spacing = int((width * 0.8) / length)
+    codes = RandomCode.letters_numbers(length)
+
+    gc = work.Entry.get(
+        styles=styles,
+        codes=codes,
+        word_spacing=word_spacing,
+        font_size=font_size,
+        height=height,
+        width=width,
+    )
+
+    if return_type is "image":
+        result = gc.get_object()
+    elif "base64":
+        result = gc.get_base64()
+    elif "filepath":
+        result = gc.get_save_to_path(filepath)
+
+    return result
 
 
-def get(code: str = None, length: int = 4,  # 自定义验证码Code，验证码长度
-        have_letter: bool = True, have_number: bool = True, characters: str = None,  # 是否包含字母，是否包含数字，额外自定义字符集
-        noise: int = 8, word_spacing: int = 10, font_size: int = 10,  # 噪声系数，字体扭曲度系数，字体间隔系数，字体大小系数
-        style: dict = None,  # 样式
-        **kwargs):
-    """
-    :param style:
-    :param characters:
-    :param code:
-    :param length:
-    :param have_letter:
-    :param have_number:
-    :param kwargs:
-    :return:
-    """
-    if style is None:
-        style = {
-            "height": 40,
-            "width": 120,
-            "background": "#ffffff",
-            "colors": ["#000000"],
-        }
-    if characters is None:
-        characters = []
+def get_img(
+        codes: list = RandomCode.letters_numbers(),
+        word_spacing: int = 60,
+        font_size: int = 160,
+        height: int = 200,
+        width: int = 400,
+        styles: dict = None
+) -> Image:
+    """"""
+    return work.Entry.get(
+        styles=styles,
+        codes=codes,
+        word_spacing=word_spacing,
+        font_size=font_size,
+        height=height,
+        width=width
+    ).get_object()
 
-    code = "1234"
-    image = None
 
-    return (image, code)
+def get_base64(
+        codes: list = RandomCode.letters_numbers(),
+        word_spacing: int = 60,
+        font_size: int = 160,
+        height: int = 200,
+        width: int = 400,
+        styles: dict = None
+) -> Image:
+    """"""
+    return work.Entry.get(
+        styles=styles,
+        codes=codes,
+        word_spacing=word_spacing,
+        font_size=font_size,
+        height=height,
+        width=width
+    ).get_base64()
+
+
+def save_to_path(
+        path: str,
+        codes: list = RandomCode.letters_numbers(),
+        word_spacing: int = 60,
+        font_size: int = 160,
+        height: int = 200,
+        width: int = 400,
+        styles: dict = None
+
+) -> Image:
+    """"""
+
+    return work.Entry.get(
+        styles=styles,
+        codes=codes,
+        word_spacing=word_spacing,
+        font_size=font_size,
+        height=height,
+        width=width
+    ).get_save_to_path(path=path)

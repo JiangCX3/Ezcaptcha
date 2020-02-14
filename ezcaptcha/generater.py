@@ -2,12 +2,12 @@ import io
 import random
 import string
 
+import os
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 from PIL.Image import alpha_composite
 
 import ezcaptcha.work
 from ezcaptcha import style
-
 
 import matplotlib.pyplot as plt
 
@@ -28,20 +28,30 @@ class FontSizeTooBig(ValueError):
 
 
 class Captcha:
-    def __init__(self, styles: dict, codes: list,
-                 distortion: int, word_spacing: int, font_size: int,
-                 **kwargs):
+    def __init__(
+            self,
+            styles: dict,
+            codes: list,
+            word_spacing: int,
+            font_size: int,
+            height: int,
+            width: int,
+            **kwargs
+    ):
+
         self.kwargs = kwargs
+
         # Checks
-        if font_size / styles["height"] > 0.8:
+        if font_size / height > 0.8:
             raise FontSizeTooBig(
                 "font_size should be less than 80% of style.height! Try smaller: >=" +
-                str(int(styles["height"] * 0.8))
+                str(int(height * 0.8))
             )
 
         # Image Style
+        self.height = height
+        self.width = width
         self.styles = styles
-        print(styles)
         self.background = self.styles["background"]
         self.word_spacing = word_spacing
         self.font_size = font_size
@@ -49,16 +59,12 @@ class Captcha:
         # Codes
         self.codes = codes
 
-        # Distortion and noises
-        self.distortion = distortion
-
         self.obj = self.create_background()
         self.draw = ImageDraw.Draw(self.obj)
 
         # ====================
-        self.add_disturbs()
-
         self.add_code_text()
+        self.add_disturbs()
 
     def get_object(self):
         """
@@ -83,7 +89,7 @@ class Captcha:
 
         :return:
         """
-        image = Image.new('RGBA', (self.styles["width"], self.styles["height"]), color=self.background)
+        image = Image.new('RGBA', (self.width, self.height), color=self.background)
 
         return image
 
@@ -93,16 +99,17 @@ class Captcha:
 
         :return:
         """
-        op_layer = Image.new('RGBA', (self.styles["width"], self.styles["height"]))
+        op_layer = Image.new('RGBA', (self.width, self.height))
         op_layer_draw = ImageDraw.Draw(op_layer)
 
         for key in range(0, len(self.codes)):
             # The font size factor controls the basic font size,
             # and the font distortion factor controls the font size to change randomly.
-            font_size = int(self.font_size + random.randint(-self.distortion, self.distortion) * 2)
+            font_size = int(self.font_size + random.randint(-10, 10) * 2)
+
             font = ImageFont.truetype(random.choice(self.styles['text']['fonts']), size=font_size)
 
-            text_y_pos = random.randint(-50, self.styles["height"] - font_size)
+            text_y_pos = random.randint(-50, self.height - font_size)
             color = random.choice(self.styles["text"]["colors"])
             color = self.hex_to_rgb(color)
 
@@ -120,18 +127,19 @@ class Captcha:
 
         :return:
         """
-        op_layer = Image.new('RGBA', (self.styles["width"], self.styles["height"]))
+        op_layer = Image.new('RGBA', (self.width, self.height))
         op_layer_draw = ImageDraw.Draw(op_layer)
 
-        font_size = int(self.styles["height"] / 10)
-        font = ImageFont.truetype("Nunito-Regular.ttf", size=font_size)
+        font_size = int(self.height / 10)
 
-        x_quantity = int(self.styles["width"] / font_size)
-        y_quantity = int(self.styles["height"] / font_size)
+        font = ImageFont.truetype(random.choice(self.styles['disturbs']['fonts']), size=font_size)
+
+        x_quantity = int(self.width / font_size)
+        y_quantity = int(self.height / font_size)
 
         for x_key in range(0, x_quantity):
 
-            # text_y_pos = random.randint(1, self.styles["height"] - font_size)
+            # text_y_pos = random.randint(1, self.height - font_size)
             color = random.choice(self.styles["disturbs"]["colors"])
             color = self.hex_to_rgb(color)
             for y_key in range(0, y_quantity):
@@ -179,8 +187,6 @@ if __name__ == '__main__':
     print(code)
 
     style = {
-        "height": 200,
-        "width": 400,
         "background": "#ffffff",
         "background-img": "",
 
@@ -188,7 +194,7 @@ if __name__ == '__main__':
             "fonts": ["Nunito-Regular.ttf"],
             "colors": ezcaptcha.work.random_color_list(),
             "waves-amplitude": 10,
-            "waves-wavelength": 20,
+            # "waves-wavelength": 20,
             # "emp-level": 18,
             # "zebra-level": 8,
             # "zebra-width": 10,
@@ -196,15 +202,15 @@ if __name__ == '__main__':
         "text": {
             "fonts": ["Nunito-Regular.ttf"],
             "colors": ezcaptcha.work.random_color_list(),
-            # "waves-amplitude": 10,
+            "waves-amplitude": 10,
             # "waves-wavelength": 20,
             # "emp-level": 18,
             # "zebra-level": 8,
-            "zebra-width": 10,
+            # "zebra-width": 10,
         }
     }
 
-    gc = Captcha(styles=style, codes=code, distortion=10, word_spacing=60, font_size=160)
+    gc = Captcha(styles=style, codes=code, distortion=10, word_spacing=60, font_size=160, height=200, width=400)
 
     plt.imshow(gc.get_object())
     plt.show()
