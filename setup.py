@@ -2,15 +2,10 @@
 # coding: utf-8
 import json
 
+import time
 from setuptools import setup
 
-version = "0.0.1"
-tag = "-alpha"
-
-f = open("version.json", "w").write(json.dumps({
-    "version": version,
-    "tag": tag
-}))
+version = "0.0.1a0"
 
 setup(
     name='ezcaptcha',
