@@ -1,9 +1,8 @@
 import json
 import re
 
-from .setup import version as version_text
-
-# version_text = "0.0.1a123"
+setup_py = open("setup.py", "r").read()
+version_text = re.findall('version_ = \"(.*)\"', setup_py)[0]
 
 version = re.findall("^([\d.]*[\d])", version_text)[0]
 stage = re.findall("^[\d.]*[\d]([a-z]*)", version_text)[0]
