@@ -5,11 +5,11 @@ import json
 import time
 from setuptools import setup
 
-version = "0.0.1a0"
+version_ = "0.0.1a0"
 
 setup(
     name='ezcaptcha',
-    version=version,
+    version=version_,
     author='JiangCX',
     author_email='jcx03@outlook.com',
     url='https://github.com/JiangCX3/Ezcaptcha',
