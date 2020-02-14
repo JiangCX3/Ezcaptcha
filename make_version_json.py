@@ -9,6 +9,10 @@ stage = re.findall("^[\d.]*[\d]([a-z]*)", version_text)[0]
 tag = stage
 stage_version = re.findall("^[\d.]*[\d][a-z]*([\d.]*[\d])", version_text)[0]
 
+if stage == "":
+    stage_version = ""
+
+
 if stage == "a":
     tag = "alpha #" + stage_version
 elif "b":
