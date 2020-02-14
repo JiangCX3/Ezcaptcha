@@ -11,5 +11,5 @@ setup(
     url='https://github.com/JiangCX3/Ezcaptcha',
     description='Python easy generate captcha images in one sentence.',
     packages=['ezcaptcha'],
-    install_requires=['numpy', 'Pillow', ]
+    install_requires=['numpy', 'Pillow']
 )
