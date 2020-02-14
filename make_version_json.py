@@ -6,22 +6,24 @@ version_text = re.findall('version_ = \"(.*)\"', setup_py)[0]
 
 version = re.findall("^([\d.]*[\d])", version_text)[0]
 stage = re.findall("^[\d.]*[\d]([a-z]*)", version_text)[0]
-stage_full = stage
-stage_version = re.findall("^[\d.]*[\d][a-z]*([0-9]*)", version_text)[0]
+tag = stage
+stage_version = re.findall("^[\d.]*[\d][a-z]*([\d.]*[\d])", version_text)[0]
 
 if stage == "a":
-    stage_full = "Alpha"
+    tag = "alpha #" + stage_version
 elif "b":
-    stage_full = "Beta"
+    tag = "beta #" + stage_version
 elif "r":
-    stage_full = "Candidate"
+    tag = "candidate #" + stage_version
 elif "rc":
-    stage_full = "Release Candidate"
+    tag = "release candidate #" + stage_version
+else:
+    tag = ""
 
 result = {
     "version": version,
     "stage": stage,
-    "stage_full": stage_full,
+    "tag": tag,
     "stage_version": stage_version,
 }
 
