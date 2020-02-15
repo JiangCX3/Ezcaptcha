@@ -2,7 +2,6 @@ import random
 
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
 
 
 def img_to_nparray(img):

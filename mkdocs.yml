@@ -1,0 +1,7 @@
+site_name: Ezcaptcha Documents
+nav:
+    - Home: index.md
+    - Getting Started: getting_started/getting_started.md
+    - Documents: documents/document.md
+    - About: about.md
+theme: readthedocs

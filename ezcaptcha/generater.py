@@ -1,26 +1,11 @@
-import io
 import random
 import string
 
-import os
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 from PIL.Image import alpha_composite
 
 import ezcaptcha.work
 from ezcaptcha import style
-
-import matplotlib.pyplot as plt
-
-# style demo
-
-
-style_demo = {
-    "height": 40,
-    "width": 120,
-    "background": "#ffffff",
-    "colors": ["#000000"],
-    "distortion": []
-}
 
 
 class FontSizeTooBig(ValueError):
@@ -182,35 +167,35 @@ class Captcha:
         return color
 
 
-if __name__ == '__main__':
-    code = [random.choices(string.ascii_letters + string.digits)[0] for s in range(5)]
-    print(code)
-
-    style = {
-        "background": "#ffffff",
-        "background-img": "",
-
-        "disturbs": {
-            "fonts": ["Nunito-Regular.ttf"],
-            "colors": ezcaptcha.work.random_color_list(),
-            "waves-amplitude": 10,
-            # "waves-wavelength": 20,
-            # "emp-level": 18,
-            # "zebra-level": 8,
-            # "zebra-width": 10,
-        },
-        "text": {
-            "fonts": ["Nunito-Regular.ttf"],
-            "colors": ezcaptcha.work.random_color_list(),
-            "waves-amplitude": 10,
-            # "waves-wavelength": 20,
-            # "emp-level": 18,
-            # "zebra-level": 8,
-            # "zebra-width": 10,
-        }
-    }
-
-    gc = Captcha(styles=style, codes=code, distortion=10, word_spacing=60, font_size=160, height=200, width=400)
-
-    plt.imshow(gc.get_object())
-    plt.show()
+# if __name__ == '__main__':
+#     code = [random.choices(string.ascii_letters + string.digits)[0] for s in range(5)]
+#     print(code)
+#
+#     style = {
+#         "background": "#ffffff",
+#         "background-img": "",
+#
+#         "disturbs": {
+#             "fonts": ["Nunito-Regular.ttf"],
+#             "colors": ezcaptcha.work.random_color_list(),
+#             "waves-amplitude": 10,
+#             # "waves-wavelength": 20,
+#             # "emp-level": 18,
+#             # "zebra-level": 8,
+#             # "zebra-width": 10,
+#         },
+#         "text": {
+#             "fonts": ["Nunito-Regular.ttf"],
+#             "colors": ezcaptcha.work.random_color_list(),
+#             "waves-amplitude": 10,
+#             # "waves-wavelength": 20,
+#             # "emp-level": 18,
+#             # "zebra-level": 8,
+#             # "zebra-width": 10,
+#         }
+#     }
+#
+#     gc = Captcha(styles=style, codes=code, distortion=10, word_spacing=60, font_size=160, height=200, width=400)
+#
+#     plt.imshow(gc.get_object())
+#     plt.show()
